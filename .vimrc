@@ -12,17 +12,20 @@ Plug 'ctrlpvim/ctrlp.vim'
 Plug 'Shougo/deoplete.nvim'
 Plug 'zchee/deoplete-go', { 'do': 'make' }
 Plug 'scrooloose/nerdtree'
+Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'roxma/nvim-yarp'
 Plug 'majutsushi/tagbar'
 Plug 'tpope/vim-commentary'
 Plug 'Townk/vim-autoclose'
 Plug 'tpope/vim-fugitive'
 Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
+Plug 'SirVer/ultisnips'
 Plug 'roxma/vim-hug-neovim-rpc'
 Plug 'tpope/vim-sensible'
 Plug 'mhinz/vim-signify'
 Plug 'sukima/xmledit'
 Plug 'vim-airline/vim-airline'
+Plug 'udalov/kotlin-vim'
 call plug#end()
 
 " SirVer/ultisnips: Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
@@ -170,7 +173,8 @@ autocmd FileType help nnoremap <buffer> s /\|\zs\S\+\ze\|<CR>
 autocmd FileType help nnoremap <buffer> S ?\|\zs\S\+\ze\|<CR>
 
 " Automatic commands
-autocmd VimEnter *.c,*.cpp,*.h,*.java,*.py,*.go NERDTree
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 autocmd FileType c,cpp,h,java,python,go nested :TagbarOpen
 
 " QuickFix window always at the bottom
@@ -181,4 +185,7 @@ autocmd Filetype ruby setlocal ts=2 sts=2 sw=2
 
 " Autoload changes in .vimrc
 autocmd BufWritePost .vimrc source $MYVIMRC
+
+" Fix editing crontab
+autocmd filetype crontab setlocal nobackup nowritebackup
 
