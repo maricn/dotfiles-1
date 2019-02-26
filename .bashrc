@@ -1,12 +1,34 @@
-# Git configuration
-if [ -f ~/.git-completion.sh ]; then
-    source ~/.git-completion.sh
+CWD=$(dirname ${BASH_SOURCE[0]})
+
+# Kubernetes
+export KUBECONFIG=$(find ~/.kube -name 'config-*' | tr '\n' ':')
+KUBE_PS1=$(brew list -1 kube-ps1 | grep '.sh$')
+if [[ -f ${KUBE_PS1} ]]; then
+    source ${KUBE_PS1}
+    kubeoff
 fi
 
+# Polyglot prompt (needs to go after kube-ps1 is loaded)
+POLYGLOT=${CWD}/addons/polyglot/polyglot.sh
+if [[ -f ${POLYGLOT} ]]; then
+    source ${POLYGLOT}
+    bind 'set show-mode-in-prompt off'
+
+    POLYGLOT_KUBE=${CWD}/addons/polyglot-kube-ps1/polyglot-kube-ps1.sh
+    [[ -f ${POLYGLOT_KUBE} ]] && source ${POLYGLOT_KUBE}
+fi
+
+export KUBE_PS1_SYMBOL_ENABLE=true
+export KUBE_PS1_CTX_COLOR=yellow
+
+# Git completion
+source ${CWD}/.git-completion.sh
+
 # Environment variables
-export PS1='\u@\h:\w $(__git_ps1 "(%s) ")\$ '
+export EDITOR=vim
 
 # Aliases
+alias ls='ls -G'
 alias cp='cp -i'
 alias mv='mv -i'
 alias rm='rm -i'
@@ -23,10 +45,11 @@ alias p='ps aux | grep -i'
 alias mvn='mvn -fae'
 alias mvncp='mvn clean package'
 alias mvnci='mvn clean install'
-alias mvnts='mvn clean install -Dtest.suite=single -Dit.suite=none'
-alias mvnis='mvn clean install -Dtest.suite=none -Dit.suite=single'
-alias mvnta='mvn clean install -Dtest.suite=all -Dit.suite=all'
-alias mvntn='mvn clean install -Dtest.suite=none -Dit.suite=none'
+
+alias k='kubectl'
+alias kctx='kubectx'
+alias kns='kubens'
+alias tf='terraform'
 
 alias git-delete='for f in `git ls-files -d`; do git rm $f; done'
 
@@ -64,3 +87,4 @@ fi
 
 # Easily change to Go package source directories (e.g. gocd .../policy)
 function gocd() { cd `go list -f '{{.Dir}}' $1`; }
+

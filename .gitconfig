@@ -18,6 +18,7 @@
     st = status
     ci = commit
     cs = commit -S
+    css = commit -S --signoff
     ms = merge -S
     cp = cherry-pick
     cps = cherry-pick -S
@@ -31,7 +32,7 @@
     lgs = log --graph --show-signature
 
 [gpg]
-    program = gpg2
+    program = gpg
 
 [apply]
     whitespace = nowarn
@@ -40,3 +41,8 @@
     pretty=format:%C(yellow)%h%Creset -%C(red)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset
     #pretty=format:%h (%ad %an) %s
 
+[url "git@github.com:"]
+    insteadOf = https://github.com/
+
+[protocol]
+	version = 2

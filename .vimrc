@@ -34,6 +34,7 @@ let g:UltiSnipsJumpForwardTrigger="<c-b>"
 let g:UltiSnipsJumpBackwardTrigger="<c-z>"
 
 " Use :help <option> to see the docs
+set encoding=utf-8
 set expandtab
 set shiftwidth=4
 set softtabstop=4
@@ -183,6 +184,7 @@ autocmd FileType qf wincmd J
 
 " Two space indent in Ruby
 autocmd Filetype ruby setlocal ts=2 sts=2 sw=2
+autocmd Filetype yaml setlocal ts=2 sts=2 sw=2
 
 " Autoload changes in .vimrc
 autocmd BufWritePost .vimrc source $MYVIMRC
