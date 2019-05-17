@@ -26,6 +26,8 @@ Plug 'mhinz/vim-signify'
 Plug 'sukima/xmledit'
 Plug 'vim-airline/vim-airline'
 Plug 'udalov/kotlin-vim'
+Plug 'leafgarland/typescript-vim'
+Plug 'Quramy/tsuquyomi'
 call plug#end()
 
 " SirVer/ultisnips: Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
@@ -165,6 +167,8 @@ autocmd VimLeave * silent !tmux killp -a
 
 " Custom file types
 au BufRead,BufNewFile *.md set filetype=markdown
+au BufRead,BufNewFile *.http set syntax=json
+au BufRead,BufNewFile *.http setlocal ts=2 sts=2 sw=2
 
 " Better help navigation
 autocmd FileType help nnoremap <buffer> <CR> <C-]>
@@ -192,3 +196,11 @@ autocmd BufWritePost .vimrc source $MYVIMRC
 " Fix editing crontab
 autocmd filetype crontab setlocal nobackup nowritebackup
 
+" Autosave folding on exit and load on open
+autocmd BufWinLeave *.* mkview
+autocmd BufWinEnter *.* silent loadview 
+
+" run ncat
+map <c-y>l :! eval $(cat ~/.netcat/localhost.env); envsubst < % \| sed '1,/Content-Length/d;/,0/,$d' \| tail -n+2 \| wc -c \| read NC_MM_CONTENT_LENGTH; export NC_MM_CONTENT_LENGTH; envsubst < % \| tee /dev/tty \| ~/.netcat/ncat-wrapper.sh localhost <CR>
+map <c-y>s :! eval $(cat ~/.netcat/staging.env); expr `envsubst < % \| sed '1,/Content-Length/d;/,0/,$d' \| tail -n+2 \| wc -c` - 1 \| read NC_MM_CONTENT_LENGTH; export NC_MM_CONTENT_LENGTH; envsubst < % \| tee /dev/tty \| ~/.netcat/ncat-wrapper.sh staging <CR>
+map <c-y>p :! eval $(cat ~/.netcat/production.env); expr `envsubst < % \| sed '1,/Content-Length/d;/,0/,$d' \| tail -n+2 \| wc -c` - 1 \| read NC_MM_CONTENT_LENGTH; export NC_MM_CONTENT_LENGTH; envsubst < % \| tee /dev/tty \| ~/.netcat/ncat-wrapper.sh production <CR>
