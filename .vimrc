@@ -9,8 +9,8 @@ endif
 call plug#begin('~/.vim/plugged')
 Plug 'jlanzarotta/bufexplorer'
 Plug 'ctrlpvim/ctrlp.vim'
-Plug 'Shougo/deoplete.nvim'
-Plug 'zchee/deoplete-go', { 'do': 'make' }
+" Plug 'Shougo/deoplete.nvim'
+" Plug 'zchee/deoplete-go', { 'do': 'make' }
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'roxma/nvim-yarp'
@@ -18,7 +18,7 @@ Plug 'majutsushi/tagbar'
 Plug 'tpope/vim-commentary'
 Plug 'Townk/vim-autoclose'
 Plug 'tpope/vim-fugitive'
-Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
+" Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
 Plug 'SirVer/ultisnips'
 Plug 'roxma/vim-hug-neovim-rpc'
 Plug 'tpope/vim-sensible'
@@ -109,30 +109,30 @@ let g:airline_symbols.branch = '⎇ '
 let g:airline_symbols.paste = 'ρ'
 
 " Vim-go
-let g:go_fmt_autosave=0
-autocmd FileType go nmap <leader>r  <Plug>(go-run)
-autocmd FileType go nmap <leader>t  <Plug>(go-test)
+" let g:go_fmt_autosave=0
+" autocmd FileType go nmap <leader>r  <Plug>(go-run)
+" autocmd FileType go nmap <leader>t  <Plug>(go-test)
 " run :GoBuild or :GoTestCompile based on the go file
-function! s:build_go_files()
-  let l:file = expand('%')
-  if l:file =~# '^\f\+_test\.go$'
-    call go#test#Test(0, 1)
-  elseif l:file =~# '^\f\+\.go$'
-    call go#cmd#Build(0)
-  endif
-endfunction
-autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
-autocmd FileType go nmap <Leader>c <Plug>(go-coverage-toggle)
+" function! s:build_go_files()
+"   let l:file = expand('%')
+"   if l:file =~# '^\f\+_test\.go$'
+"     call go#test#Test(0, 1)
+"   elseif l:file =~# '^\f\+\.go$'
+"     call go#cmd#Build(0)
+"   endif
+" endfunction
+" autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
+" autocmd FileType go nmap <Leader>c <Plug>(go-coverage-toggle)
 
 " Deoplete (autocompletion)
-set pyxversion=3
-let g:deoplete#enable_at_startup = 1
-let g:deoplete#disable_auto_complete = 1
-set completeopt-=preview
-set completeopt+=noinsert,longest,menuone
-if has("patch-7.4.314")
-    set shortmess+=c
-endif
+" set pyxversion=3
+" let g:deoplete#enable_at_startup = 1
+" let g:deoplete#disable_auto_complete = 1
+" set completeopt-=preview
+" set completeopt+=noinsert,longest,menuone
+" if has("patch-7.4.314")
+"     set shortmess+=c
+" endif
 " Close the preview window after completion
 autocmd InsertLeave,CompleteDone * if pumvisible() == 0 | pclose | endif
 
@@ -181,7 +181,7 @@ autocmd FileType help nnoremap <buffer> S ?\|\zs\S\+\ze\|<CR>
 " Automatic commands
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
-autocmd FileType c,cpp,h,java,python,go nested :TagbarOpen
+autocmd FileType c,cpp,h,java,python,go,js,jsx,tsc nested :TagbarOpen
 
 " QuickFix window always at the bottom
 autocmd FileType qf wincmd J
@@ -189,6 +189,9 @@ autocmd FileType qf wincmd J
 " Two space indent in Ruby
 autocmd Filetype ruby setlocal ts=2 sts=2 sw=2
 autocmd Filetype yaml setlocal ts=2 sts=2 sw=2
+autocmd Filetype js setlocal ts=2 sts=2 sw=2
+autocmd Filetype jsx setlocal ts=2 sts=2 sw=2
+autocmd Filetype tsc setlocal ts=2 sts=2 sw=2
 
 " Autoload changes in .vimrc
 autocmd BufWritePost .vimrc source $MYVIMRC
@@ -204,3 +207,6 @@ autocmd BufWinEnter *.* silent loadview
 map <c-y>l :! eval $(cat ~/.netcat/localhost.env); envsubst < % \| sed '1,/Content-Length/d;/,0/,$d' \| tail -n+2 \| wc -c \| read NC_MM_CONTENT_LENGTH; export NC_MM_CONTENT_LENGTH; envsubst < % \| tee /dev/tty \| ~/.netcat/ncat-wrapper.sh localhost <CR>
 map <c-y>s :! eval $(cat ~/.netcat/staging.env); expr `envsubst < % \| sed '1,/Content-Length/d;/,0/,$d' \| tail -n+2 \| wc -c` - 1 \| read NC_MM_CONTENT_LENGTH; export NC_MM_CONTENT_LENGTH; envsubst < % \| tee /dev/tty \| ~/.netcat/ncat-wrapper.sh staging <CR>
 map <c-y>p :! eval $(cat ~/.netcat/production.env); expr `envsubst < % \| sed '1,/Content-Length/d;/,0/,$d' \| tail -n+2 \| wc -c` - 1 \| read NC_MM_CONTENT_LENGTH; export NC_MM_CONTENT_LENGTH; envsubst < % \| tee /dev/tty \| ~/.netcat/ncat-wrapper.sh production <CR>
+
+" Fix background (revert so that terminal's default is used)
+hi! Normal ctermbg=NONE guibg=NONE
