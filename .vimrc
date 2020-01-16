@@ -28,6 +28,8 @@ Plug 'vim-airline/vim-airline'
 Plug 'udalov/kotlin-vim'
 Plug 'leafgarland/typescript-vim'
 Plug 'Quramy/tsuquyomi'
+Plug 'mboughaba/i3config.vim'
+Plug 'SidOfc/mkdx'
 call plug#end()
 
 " SirVer/ultisnips: Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
@@ -51,11 +53,17 @@ set number
 set title
 set ruler
 set nospell
+set rnu
 
 " Customize view
 sy on
 set t_Co=256
-colorscheme nacx
+colorscheme default
+" nacx-maricn
+
+" Fix background (revert so that terminal's default is used)
+hi! Normal ctermbg=NONE guibg=NONE
+hi! Normal guifg=NONE ctermfg=NONE
 
 " Key remaps
 nmap <F2> :NERDTreeToggle<CR>
@@ -154,6 +162,15 @@ imap <C-@> <C-Space>
 let g:ctrlp_map = '<C-p>'
 let g:ctrlp_cmd = 'CtrlP'
 
+" Markdown plugin
+let g:mkdx#settings     = { 'highlight': { 'enable': 1 },
+                        \ 'enter': { 'shift': 1 },
+                        \ 'links': { 'external': { 'enable': 1 } },
+                        \ 'toc': { 'text': 'Table of Contents', 'update_on_write': 1 },
+                        \ 'fold': { 'enable': 1 } }
+let g:polyglot_disabled = ['markdown'] " for vim-polyglot users, it loads Plasticboy's markdown
+                                       " plugin which unfortunately interferes with mkdx list indentation.
+
 " Tmux integration
 if &term =~ '^screen'
     " tmux will send xterm-style keys when xterm-keys is on
@@ -209,5 +226,3 @@ map <c-y>l :! eval $(cat ~/.netcat/localhost.env); envsubst < % \| sed '1,/Conte
 map <c-y>s :! eval $(cat ~/.netcat/staging.env); expr `envsubst < % \| sed '1,/Content-Length/d;/,0/,$d' \| tail -n+2 \| wc -c` - 1 \| read NC_MM_CONTENT_LENGTH; export NC_MM_CONTENT_LENGTH; envsubst < % \| tee /dev/tty \| ~/.netcat/ncat-wrapper.sh staging \| tee -a ~/.netcat/logs/staging.log \| tee /dev/tty \| grep '^{.*}$' \| jq -r '.accessToken' > ~/.netcat/tokens/staging.token <CR>
 map <c-y>p :! eval $(cat ~/.netcat/production.env); expr `envsubst < % \| sed '1,/Content-Length/d;/,0/,$d' \| tail -n+2 \| wc -c` - 1 \| read NC_MM_CONTENT_LENGTH; export NC_MM_CONTENT_LENGTH; envsubst < % \| tee /dev/tty \| ~/.netcat/ncat-wrapper.sh production \| tee -a ~/.netcat/logs/production.log \| tee /dev/tty \| grep '^{.*}$' \| jq -r '.accessToken' > ~/.netcat/tokens/production.token <CR>
 
-" Fix background (revert so that terminal's default is used)
-hi! Normal ctermbg=NONE guibg=NONE
