@@ -7,29 +7,32 @@ endif
 
 " Load plugins
 call plug#begin('~/.vim/plugged')
-Plug 'jlanzarotta/bufexplorer'
 Plug 'ctrlpvim/ctrlp.vim'
-" Plug 'Shougo/deoplete.nvim'
-" Plug 'zchee/deoplete-go', { 'do': 'make' }
 Plug 'scrooloose/nerdtree'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'roxma/nvim-yarp'
 Plug 'majutsushi/tagbar'
 Plug 'tpope/vim-commentary'
-Plug 'Townk/vim-autoclose'
+" autocomplete window with escape
 Plug 'tpope/vim-fugitive'
-" Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
 Plug 'SirVer/ultisnips'
 Plug 'roxma/vim-hug-neovim-rpc'
 Plug 'tpope/vim-sensible'
 Plug 'mhinz/vim-signify'
 Plug 'sukima/xmledit'
 Plug 'vim-airline/vim-airline'
-Plug 'udalov/kotlin-vim'
 Plug 'leafgarland/typescript-vim'
 Plug 'Quramy/tsuquyomi'
 Plug 'mboughaba/i3config.vim'
 Plug 'SidOfc/mkdx'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'bkad/CamelCaseMotion'
+
+" Plug 'Townk/vim-autoclose' " perhaps is conflicting when closing
+" Plug 'udalov/kotlin-vim'
+" Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
+" Plug 'Shougo/deoplete.nvim'
+" Plug 'zchee/deoplete-go', { 'do': 'make' }
 call plug#end()
 
 " SirVer/ultisnips: Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
@@ -54,34 +57,90 @@ set title
 set ruler
 set nospell
 set rnu
+set updatetime=300
 
-" Customize view
+"" Customize view
 sy on
 set t_Co=256
 colorscheme default
 " nacx-maricn
 
-" Fix background (revert so that terminal's default is used)
+"""" Fix background (revert so that terminal's default is used)
 hi! Normal ctermbg=NONE guibg=NONE
 hi! Normal guifg=NONE ctermfg=NONE
 
-" Key remaps
-nmap <F2> :NERDTreeToggle<CR>
-nmap <F3> :TagbarToggle<CR>
-nmap <F4> :BufExplorerHorizontalSplit<CR>
-nmap <silent> <F5> :!tmux splitw -v -l 5<CR><CR>
-nmap f :NERDTreeFind<CR>
+"" Key remaps -----------------
+nnoremap <silent> <expr> <C-S-E> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufexists(expand('%')) ? "\:NERDTreeFind<CR>" : "\:NERDTree<CR>"
+nnoremap <silent> <expr> <F2> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufexists(expand('%')) ? "\:NERDTreeFind<CR>" : "\:NERDTree<CR>"
+:let mapleader = '\'
 
-" Use fancy buffer closing that doesn't close the split
-:nnoremap <silent> <S-Left> :bprevious<CR>
-:nnoremap <silent> <S-Right> :bnext<CR>
-:noremap <silent> <C-Left> b
-:noremap <silent> <C-Right> w
+""" Usability -----------------
+"""" Use K to show documentation in preview window
+nnoremap <silent> K :call <SID>show_documentation()<CR>
+function! s:show_documentation()
+  if (index(['vim','help'], &filetype) >= 0)
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
 
+"""" CamelCase motion
+let g:camelcasemotion_key = '<leader>'
+
+""" Navigation ----------------
+nmap <A-F7> :TsuReferences<CR>
+nmap <C-S-P> :CtrlPBuffer<CR>
+"""" CtrlP - go to definition
+let g:ctrlp_map = '<C-p>'
+let g:ctrlp_cmd = 'CtrlP'
+let g:ctrlp_custom_ignore = '\v[\/](node_modules|target|dist)|(\.(swp|ico|git|svn))$'
+
+""" Refactoring ---------------
+nmap <S-F6> :TsuRenameSymbol<CR>
 " Replace strings in local or global scope
 " https://stackoverflow.com/a/597932/3540564
 :nnoremap gr gd[{V%:s/<C-R>///gc<Left><Left><Left>
 :nnoremap gR gD:s/<C-R>///gc<Left><Left><Left>
+" nmap <silent> <A-7> :copen<CR><CR>
+" :nnoremap <A-S-F> :vimgrep /<C-R>/g **<CR>
+set wildignore=*/node_modules/*
+
+""" Buffers -------------------
+nmap <F3> :TagbarToggle<CR>
+nmap <silent> <F5> :!tmux splitw -v -l 5<CR><CR>
+"""" Use fancy buffer closing that doesn't close the split
+:nnoremap <silent> <S-Left> :bprevious<CR>
+:nnoremap <silent> <S-Right> :bnext<CR>
+:noremap <silent> <C-Left> b
+:noremap <silent> <C-Right> w
+"""" Move with Ctrl+hjkl (skip Ctrl+W step)
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-H> <C-W><C-H>
+"" END Key remaps -------------
+
+" Plugins ----------------------
+
+"" Tsuquyomi
+""" Disable popup menu
+autocmd FileType typescript setlocal completeopt-=menu
+""" Close the preview window after completion
+autocmd InsertLeave,CompleteDone * if pumvisible() == 0 | pclose | endif
+
+"" coc.nvim
+""" Enter just selects the item in the autocomplete menu
+""" http://vim.wikia.com/wiki/VimTip1386
+:inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+""" Map Ctrl+Space to autocomplete
+""" https://coderwall.com/p/cl6cpq/vim-ctrl-space-omni-keyword-completion
+inoremap <expr> <C-Space> pumvisible() \|\| &omnifunc == '' ?
+            \ "\<lt>C-n>" :
+            \ "\<lt>C-x>\<lt>C-o><c-r>=pumvisible() ?" .
+            \ "\"\\<lt>c-n>\\<lt>c-p>\\<lt>c-n>\" :" .
+            \ "\" \\<lt>bs>\\<lt>C-n>\"\<CR>"
+imap <C-@> <C-Space>
 
 " :w!! sudo saves the file
 cmap w!! w !sudo tee % >/dev/null
@@ -91,6 +150,7 @@ let NERDTreeAutoCenter = 1
 let NERDTreeCaseSensitiveSort = 1
 let NERDTreeHighlightCursorline = 1
 let NERDTreeMouseMode = 1
+let NERDTreeQuitOnOpen = 1
 "let NERDTreeDirArrows = 1
 let NERDTreeIgnore=['.*\.o$']
 let NERDTreeIgnore+=['.*\~$']
@@ -99,11 +159,10 @@ let NERDTreeIgnore+=['.*\.so$', '.*\.a$']
 let NERDTreeIgnore+=['.*\.pyc$']
 let NERDTreeIgnore+=['.*\.class$']
 
-" Bufexplorer options
-let g:bufExplorerSplitBelow=1
-
-" Airline
-let g:airline#extensions#tabline#enabled = 1
+" Airline - status bar
+" let g:airline_extensions = []
+let g:airline_highlighting_cache = 1
+let g:airline#extensions#tabline#enabled = 0 "1
 let g:airline#extensions#tabline#left_sep = ''
 let g:airline#extensions#tabline#left_alt_sep = '»'
 let g:airline_exclude_preview = 1
@@ -117,51 +176,6 @@ endif
 let g:airline_symbols.linenr = '␤ '
 let g:airline_symbols.branch = '⎇ '
 let g:airline_symbols.paste = 'ρ'
-
-" Vim-go
-" let g:go_fmt_autosave=0
-" autocmd FileType go nmap <leader>r  <Plug>(go-run)
-" autocmd FileType go nmap <leader>t  <Plug>(go-test)
-" run :GoBuild or :GoTestCompile based on the go file
-" function! s:build_go_files()
-"   let l:file = expand('%')
-"   if l:file =~# '^\f\+_test\.go$'
-"     call go#test#Test(0, 1)
-"   elseif l:file =~# '^\f\+\.go$'
-"     call go#cmd#Build(0)
-"   endif
-" endfunction
-" autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
-" autocmd FileType go nmap <Leader>c <Plug>(go-coverage-toggle)
-
-" Deoplete (autocompletion)
-" set pyxversion=3
-" let g:deoplete#enable_at_startup = 1
-" let g:deoplete#disable_auto_complete = 1
-" set completeopt-=preview
-" set completeopt+=noinsert,longest,menuone
-" if has("patch-7.4.314")
-"     set shortmess+=c
-" endif
-" Close the preview window after completion
-autocmd InsertLeave,CompleteDone * if pumvisible() == 0 | pclose | endif
-
-" Enter just selects the item in the autocomplete menu
-" http://vim.wikia.com/wiki/VimTip1386
-:inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
-
-" Map Ctrl+Space to autocomplete
-" https://coderwall.com/p/cl6cpq/vim-ctrl-space-omni-keyword-completion
-inoremap <expr> <C-Space> pumvisible() \|\| &omnifunc == '' ?
-            \ "\<lt>C-n>" :
-            \ "\<lt>C-x>\<lt>C-o><c-r>=pumvisible() ?" .
-            \ "\"\\<lt>c-n>\\<lt>c-p>\\<lt>c-n>\" :" .
-            \ "\" \\<lt>bs>\\<lt>C-n>\"\<CR>"
-imap <C-@> <C-Space>
-
-" CtrlP
-let g:ctrlp_map = '<C-p>'
-let g:ctrlp_cmd = 'CtrlP'
 
 " Markdown plugin
 let g:mkdx#settings     = { 'highlight': { 'enable': 1 },
@@ -180,16 +194,15 @@ if &term =~ '^screen'
     execute "set <xRight>=\e[1;*C"
     execute "set <xLeft>=\e[1;*D"
 endif
-
 " Close tmux when exiting vim
 autocmd VimLeave * silent !tmux kill-session -t $VIM_SESSION
 
-" Custom file types
+""" Custom file types
 au BufRead,BufNewFile *.md set filetype=markdown
 au BufRead,BufNewFile *.http set syntax=json
 au BufRead,BufNewFile *.http setlocal ts=2 sts=2 sw=2
 
-" Better help navigation
+""" Better help navigation
 autocmd FileType help nnoremap <buffer> <CR> <C-]>
 autocmd FileType help nnoremap <buffer> <BS> <C-T>
 autocmd FileType help nnoremap <buffer> o /'\l\{2,\}'<CR>
@@ -197,23 +210,26 @@ autocmd FileType help nnoremap <buffer> O ?'\l\{2,\}'<CR>
 autocmd FileType help nnoremap <buffer> s /\|\zs\S\+\ze\|<CR>
 autocmd FileType help nnoremap <buffer> S ?\|\zs\S\+\ze\|<CR>
 
-" Automatic commands
+""" Automatic commands
 autocmd StdinReadPre * let s:std_in=1
 autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
-autocmd FileType c,cpp,h,java,python,go,js,jsx,tsc nested :TagbarOpen
+autocmd FileType c,cpp,h,java,python,go,js,jsx,tsc,ts nested :TagbarOpen
 
-" QuickFix window always at the bottom
+""" QuickFix window always at the bottom
 autocmd FileType qf wincmd J
 
-" Two space indent in Ruby
+""" Two space indents:
 autocmd Filetype ruby setlocal ts=2 sts=2 sw=2
 autocmd Filetype yaml setlocal ts=2 sts=2 sw=2
 autocmd Filetype js setlocal ts=2 sts=2 sw=2
 autocmd Filetype jsx setlocal ts=2 sts=2 sw=2
 autocmd Filetype tsc setlocal ts=2 sts=2 sw=2
+autocmd Filetype ts setlocal ts=2 sts=2 sw=2
+autocmd Filetype typescript setlocal ts=2 sts=2 sw=2
 
-" Autoload changes in .vimrc
+""" Autoload changes in .vimrc
 autocmd BufWritePost .vimrc source $MYVIMRC
+cmap reloadvimrc source $MYVIMRC
 
 " Fix editing crontab
 autocmd filetype crontab setlocal nobackup nowritebackup
