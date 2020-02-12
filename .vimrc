@@ -20,7 +20,6 @@ Plug 'roxma/vim-hug-neovim-rpc'
 Plug 'tpope/vim-sensible'
 Plug 'mhinz/vim-signify'
 Plug 'sukima/xmledit'
-Plug 'vim-airline/vim-airline'
 Plug 'leafgarland/typescript-vim'
 Plug 'Quramy/tsuquyomi'
 Plug 'mboughaba/i3config.vim'
@@ -159,23 +158,56 @@ let NERDTreeIgnore+=['.*\.so$', '.*\.a$']
 let NERDTreeIgnore+=['.*\.pyc$']
 let NERDTreeIgnore+=['.*\.class$']
 
-" Airline - status bar
-" let g:airline_extensions = []
-let g:airline_highlighting_cache = 1
-let g:airline#extensions#tabline#enabled = 0 "1
-let g:airline#extensions#tabline#left_sep = ''
-let g:airline#extensions#tabline#left_alt_sep = '»'
-let g:airline_exclude_preview = 1
-let g:airline_left_sep = '▶'
-let g:airline_left_alt_sep = '»'
-let g:airline_right_sep = '◀'
-let g:airline_right_alt_sep = '«'
-if !exists('g:airline_symbols')
-    let g:airline_symbols = {}
-endif
-let g:airline_symbols.linenr = '␤ '
-let g:airline_symbols.branch = '⎇ '
-let g:airline_symbols.paste = 'ρ'
+" status bar colors
+au InsertEnter * hi statusline guifg=black guibg=#d7afff ctermfg=black ctermbg=magenta
+au InsertLeave * hi statusline guifg=black guibg=#8fbfdc ctermfg=black ctermbg=cyan
+hi statusline guifg=black guibg=#8fbfdc ctermfg=black ctermbg=cyan
+
+" Status line
+" default: set statusline=%f\ %h%w%m%r\ %=%(%l,%c%V\ %=\ %P%)
+
+" Status Line Custom
+let g:currentmode={
+    \ 'n'  : 'Normal',
+    \ 'no' : 'Normal·Operator Pending',
+    \ 'v'  : 'Visual',
+    \ 'V'  : 'V·Line',
+    \ '^V' : 'V·Block',
+    \ 's'  : 'Select',
+    \ 'S'  : 'S·Line',
+    \ '^S' : 'S·Block',
+    \ 'i'  : 'Insert',
+    \ 'R'  : 'Replace',
+    \ 'Rv' : 'V·Replace',
+    \ 'c'  : 'Command',
+    \ 'cv' : 'Vim Ex',
+    \ 'ce' : 'Ex',
+    \ 'r'  : 'Prompt',
+    \ 'rm' : 'More',
+    \ 'r?' : 'Confirm',
+    \ '!'  : 'Shell',
+    \ 't'  : 'Terminal'
+    \}
+
+set laststatus=2
+set noshowmode
+set statusline=
+set statusline+=%0*\ %n\                                 " Buffer number
+set statusline+=%0*\ %<%F%m%r%h%w\                       " File path, modified, readonly, helpfile, preview
+set statusline+=%3*│                                     " Separator
+set statusline+=%2*\ %02l:%02v\ (%3p%%)\                 " Line number : column number ( percentage )
+set statusline+=%=                                       " Right Side
+set statusline+=%2*\ %Y\                                 " FileType
+set statusline+=%3*│                                     " Separator
+set statusline+=%2*\ %{''.(&fenc!=''?&fenc:&enc).''}     " Encoding
+set statusline+=\ (%{&ff})                               " FileFormat (dos/unix..)
+set statusline+=%3*│                                     " Separator
+set statusline+=%0*\ %{toupper(g:currentmode[mode()])}\  " The current mode
+
+hi User1 ctermfg=007 ctermbg=239 guibg=#4e4e4e guifg=#adadad
+hi User2 ctermfg=007 ctermbg=236 guibg=#303030 guifg=#adadad
+hi User3 ctermfg=236 ctermbg=236 guibg=#303030 guifg=#303030
+hi User4 ctermfg=239 ctermbg=239 guibg=#4e4e4e guifg=#4e4e4e
 
 " Markdown plugin
 let g:mkdx#settings     = { 'highlight': { 'enable': 1 },
