@@ -1,0 +1,6 @@
+{
+  "prettier.tslintIntegration": true,
+  "coc.preferences.formatOnSaveFiletypes": ["ts", "js", "css", "javascript", "typescript"],
+  "coc.preferences.colorSupport": false,
+  "typescript.preferences.importModuleSpecifier": "relative"
+}

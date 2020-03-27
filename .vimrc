@@ -9,7 +9,7 @@ endif
 call plug#begin('~/.vim/plugged')
 " Productivity
 Plug 'itchyny/calendar.vim'
-Plug 'paulkass/jira-vim'
+""" Plug 'paulkass/jira-vim'
 
 " CtrlP
 Plug 'ctrlpvim/ctrlp.vim'
@@ -20,6 +20,7 @@ Plug 'Xuyuanp/nerdtree-git-plugin'
 Plug 'ryanoasis/vim-devicons'
 " Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
 
+" Git related
 Plug 'tpope/vim-fugitive'
 Plug 'rhysd/committia.vim'
 " Plug 'mhinz/vim-signify'
@@ -33,7 +34,6 @@ Plug 'roxma/vim-hug-neovim-rpc'
 Plug 'tpope/vim-sensible'
 Plug 'sukima/xmledit'
 Plug 'leafgarland/typescript-vim'
-Plug 'Quramy/tsuquyomi'
 Plug 'mboughaba/i3config.vim'
 Plug 'SidOfc/mkdx'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
@@ -198,7 +198,8 @@ nmap <leader>a  <Plug>(coc-codeaction-selected)
 " Remap keys for applying codeAction to the current line.
 nmap <leader>ac  <Plug>(coc-codeaction)
 " Apply AutoFix to problem on the current line.
-nmap <leader>qf  <Plug>(coc-fix-current)
+" Disabled to make <leader>q (smart delete buffer) work faster
+" nmap <leader>qf  <Plug>(coc-fix-current)
 
 """" Enter just selects the item in the autocomplete menu
 """" http://vim.wikia.com/wiki/VimTip1386
@@ -260,11 +261,10 @@ nnoremap <silent> <space>p  :<C-u>CocListResume<CR>
 let g:camelcasemotion_key = '<leader>'
 
 """ Navigation ----------------
-nmap <A-F7> :TsuReferences<CR>
 """" CtrlP - go to definition
 let g:ctrlp_map = '<C-p>'
 let g:ctrlp_cmd = 'CtrlP'
-let g:ctrlp_custom_ignore = '\v[\/](node_modules|target|dist)|(\.(swp|ico|git|svn))$'
+let g:ctrlp_custom_ignore = '\v[\/](node_modules|target|dist|coverage|researchtag|webBasedPortal)|(\.(swp|ico|git|svn))$'
 noremap <leader>pp <ESC>:CtrlPRoot<CR>
 noremap <leader>pb <ESC>:CtrlPBuffer<CR>
 noremap <leader>pt <ESC>:CtrlPMRUFiles<CR>
@@ -311,12 +311,6 @@ source ~/.cache/calendar.vim/credentials.vim
 let g:jiraVimDomainName = "https://gomimi.atlassian.net"
 let g:jiraVimEmail = "nikola.maric@mimi.io"
 let g:jiraVimToken = "vaFuZgHD0nRU22FIxIXH73A7"
-
-"" Tsuquyomi
-""" Disable popup menu
-autocmd FileType typescript setlocal completeopt-=menu
-""" Close the preview window after completion
-autocmd InsertLeave,CompleteDone * if pumvisible() == 0 | pclose | endif
 
 " :w!! sudo saves the file
 cmap w!! w !sudo tee % >/dev/null
