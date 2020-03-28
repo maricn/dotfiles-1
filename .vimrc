@@ -11,6 +11,11 @@ call plug#begin('~/.vim/plugged')
 Plug 'itchyny/calendar.vim'
 """ Plug 'paulkass/jira-vim'
 
+" Quake term
+if v:version >= 801
+  Plug 'bag-man/nuake'    " Quake term
+endif
+
 " CtrlP
 Plug 'ctrlpvim/ctrlp.vim'
 
@@ -26,6 +31,8 @@ Plug 'rhysd/committia.vim'
 " Plug 'mhinz/vim-signify'
 Plug 'airblade/vim-gitgutter'
 
+" Utilities
+Plug 'matze/vim-move'                   " Move lines up and down
 " Plug 'roxma/nvim-yarp'
 Plug 'majutsushi/tagbar'
 Plug 'tpope/vim-commentary'
@@ -43,7 +50,11 @@ Plug 'joshdick/onedark.vim'
 
 Plug 'camspiers/animate.vim'
 Plug 'camspiers/lens.vim'
-
+" Appearance
+Plug 'unblevable/quick-scope'         " Highlight jump characters
+Plug 'joshdick/onedark.vim'           " Color scheme onedark
+Plug 'breuckelen/vim-resize'          " Use Ctrl+arrows to resize splits
+Plug 'chrisbra/Colorizer'             " Show hex codes as colours
 " Plug 'Townk/vim-autoclose' " perhaps is conflicting when closing
 " Plug 'udalov/kotlin-vim'
 " Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
@@ -98,6 +109,11 @@ hi! Normal guifg=NONE ctermfg=NONE
 "" Key remaps -----------------
 nnoremap <silent> <expr> <C-S-E> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufexists(expand('%')) ? "\:NERDTreeFind<CR>" : "\:NERDTree<CR>"
 nnoremap <silent> <expr> <F2> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufexists(expand('%')) ? "\:NERDTreeFind<CR>" : "\:NERDTree<CR>"
+
+"" Movement and manipulation remaps
+nnoremap Y y$
+map H ^
+map L $
 
 :let mapleader = '\'
 
@@ -311,6 +327,16 @@ source ~/.cache/calendar.vim/credentials.vim
 let g:jiraVimDomainName = "https://gomimi.atlassian.net"
 let g:jiraVimEmail = "nikola.maric@mimi.io"
 let g:jiraVimToken = "vaFuZgHD0nRU22FIxIXH73A7"
+
+"" Nuake
+tnoremap <C-q> <C-w>N
+tnoremap <C-\> <C-\><C-n>:Nuake<CR>
+nnoremap + <C-w>3+
+nnoremap _ <C-w>3-
+nnoremap <C-\> :Nuake<CR>
+inoremap <C-\> <C-\><C-n>:Nuake<CR>
+let g:nuake_position = 'top'
+let g:nuake_size = 0.2
 
 " :w!! sudo saves the file
 cmap w!! w !sudo tee % >/dev/null
