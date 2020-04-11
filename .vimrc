@@ -52,7 +52,8 @@ Plug 'joshdick/onedark.vim'
 " Appearance
 Plug 'camspiers/animate.vim'
 Plug 'camspiers/lens.vim'
-Plug 'unblevable/quick-scope'         " Highlight jump characters
+" Plug 'unblevable/quick-scope'         " Highlight jump characters - slows
+" down vim considerably
 Plug 'joshdick/onedark.vim'           " Color scheme onedark
 Plug 'breuckelen/vim-resize'          " Use Ctrl+arrows to resize splits
 Plug 'chrisbra/Colorizer'             " Show hex codes as colours
@@ -119,6 +120,7 @@ map H ^
 map L $
 
 :let mapleader = '\'
+:nmap , \
 
 """ Usability -----------------
 """" \s is for word substitute
