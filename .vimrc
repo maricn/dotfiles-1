@@ -8,7 +8,6 @@ endif
 " Load plugins
 call plug#begin('~/.vim/plugged')
 " Productivity
-Plug 'itchyny/calendar.vim'
 """ Plug 'paulkass/jira-vim'
 
 " Quake term
@@ -32,7 +31,9 @@ Plug 'rhysd/committia.vim'
 Plug 'airblade/vim-gitgutter'
 
 " Utilities
+Plug 'brooth/far.vim'                   " Find and replace
 Plug 'matze/vim-move'                   " Move lines up and down
+Plug 'ConradIrwin/vim-bracketed-paste'  " Detect clipboard paste (auto :set paste!)
 " Plug 'roxma/nvim-yarp'
 Plug 'majutsushi/tagbar'
 Plug 'tpope/vim-commentary'
@@ -40,17 +41,17 @@ Plug 'tpope/vim-commentary'
 Plug 'roxma/vim-hug-neovim-rpc'
 Plug 'tpope/vim-sensible'
 Plug 'sukima/xmledit'
-Plug 'leafgarland/typescript-vim'
 Plug 'mboughaba/i3config.vim'
-Plug 'SidOfc/mkdx'
+Plug 'SidOfc/mkdx'                      " Markdown plugin
+Plug 'sulibo/vim-jekyll'                " Jekyll plugin
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'leafgarland/typescript-vim'
 Plug 'bkad/CamelCaseMotion'
-Plug 'brooth/far.vim'
 Plug 'joshdick/onedark.vim'
 
+" Appearance
 Plug 'camspiers/animate.vim'
 Plug 'camspiers/lens.vim'
-" Appearance
 Plug 'unblevable/quick-scope'         " Highlight jump characters
 Plug 'joshdick/onedark.vim'           " Color scheme onedark
 Plug 'breuckelen/vim-resize'          " Use Ctrl+arrows to resize splits
@@ -109,6 +110,8 @@ hi! Normal guifg=NONE ctermfg=NONE
 "" Key remaps -----------------
 nnoremap <silent> <expr> <C-S-E> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufexists(expand('%')) ? "\:NERDTreeFind<CR>" : "\:NERDTree<CR>"
 nnoremap <silent> <expr> <F2> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufexists(expand('%')) ? "\:NERDTreeFind<CR>" : "\:NERDTree<CR>"
+:nnoremap <F5> "=strftime("%FT%T%z")<CR>P
+:inoremap <F5> <C-R>=strftime("%FT%T%z")<CR>
 
 "" Movement and manipulation remaps
 nnoremap Y y$
@@ -131,7 +134,7 @@ set cmdheight=2
 
 " Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
 " delays and poor user experience.
-set updatetime=300
+set updatetime=250
 
 " Don't pass messages to |ins-completion-menu|.
 set shortmess+=c
@@ -298,7 +301,6 @@ nmap <S-F6> <Plug>(coc-rename)
 
 """ Buffers -------------------
 nmap <F3> :TagbarToggle<CR>
-nmap <silent> <F5> :!tmux splitw -v -l 5<CR><CR>
 """" Use fancy buffer closing that doesn't close the split
 :nnoremap <silent> <S-Left> :bprevious<CR>
 :nnoremap <silent> <S-Right> :bnext<CR>
@@ -315,13 +317,6 @@ nmap <leader>q <Plug>Kwbd
 "" END Key remaps -------------
 
 " Plugins ----------------------
-
-"" Calendar
-let g:calendar_google_calendar = 1
-let g:calendar_google_task = 0
-let g:calendar_date_endian = 'big'
-let g:calendar_date_separater = '-'
-source ~/.cache/calendar.vim/credentials.vim
 
 "" Jira
 let g:jiraVimDomainName = "https://gomimi.atlassian.net"
@@ -448,6 +443,10 @@ let g:mkdx#settings     = { 'highlight': { 'enable': 1 },
 let g:polyglot_disabled = ['markdown'] " for vim-polyglot users, it loads Plasticboy's markdown
                                        " plugin which unfortunately interferes with mkdx list indentation.
 
+" Jekyll plugin (notes)
+let g:jekyll_post_extension = '.md'
+let g:jekyll_draft_dirs = ['_drafts', '_source/_drafts', 'notes']
+
 " Tmux integration
 if &term =~ '^screen'
     " tmux will send xterm-style keys when xterm-keys is on
@@ -461,6 +460,7 @@ autocmd VimLeave * silent !tmux kill-session -t $VIM_SESSION
 
 """ Custom file types
 au BufRead,BufNewFile *.md set filetype=markdown
+syntax match Comment /\%^---\_.\{-}---$/ contains=@Spell
 au BufRead,BufNewFile *.http set syntax=json
 au BufRead,BufNewFile *.http setlocal ts=2 sts=2 sw=2
 autocmd FileType json syntax match Comment +\/\/.\+$+
