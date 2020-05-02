@@ -5,18 +5,25 @@ if empty(glob('~/.vim/autoload/plug.vim'))
   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
-" Load plugins
+" Load plugins {{{
 call plug#begin('~/.vim/plugged')
 " Productivity
 """ Plug 'paulkass/jira-vim'
+
+Plug 'liuchengxu/vim-which-key'       " Vim mapping, and its on-demand lazy load
+Plug 'liuchengxu/vim-which-key', { 'on': ['WhichKey', 'WhichKey!'] }
 
 " Quake term
 if v:version >= 801
   Plug 'bag-man/nuake'    " Quake term
 endif
 
-" CtrlP
-Plug 'ctrlpvim/ctrlp.vim'
+" TMP: Plug 'ctrlpvim/ctrlp.vim'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+Plug 'tweekmonster/fzf-filemru'
+Plug 'pbogut/fzf-mru.vim'
+Plug 'qpkorr/vim-bufkill'
 
 " NERDTree
 Plug 'scrooloose/nerdtree'
@@ -29,13 +36,17 @@ Plug 'tpope/vim-fugitive'
 Plug 'rhysd/committia.vim'
 " Plug 'mhinz/vim-signify'
 Plug 'airblade/vim-gitgutter'
+Plug 'tpope/vim-rhubarb'                " To use :Gbrowse (open commit in GitHub)
 
 " Utilities
-Plug 'brooth/far.vim'                   " Find and replace
+" Plug 'brooth/far.vim'                   " Find and replace
+Plug 'stefandtw/quickfix-reflector.vim' " Edit the quickfix list (find and replace with rg/fzf)
 Plug 'matze/vim-move'                   " Move lines up and down
 Plug 'ConradIrwin/vim-bracketed-paste'  " Detect clipboard paste (auto :set paste!)
+Plug 'jremmen/vim-ripgrep'              " Use ripgrep for search
 " Plug 'roxma/nvim-yarp'
-Plug 'majutsushi/tagbar'
+Plug 'majutsushi/tagbar'                " Tagbar (right side thing to show functions)
+Plug 'bkad/CamelCaseMotion'
 Plug 'tpope/vim-commentary'
 " autocomplete window with escape
 Plug 'roxma/vim-hug-neovim-rpc'
@@ -44,12 +55,13 @@ Plug 'sukima/xmledit'
 Plug 'mboughaba/i3config.vim'
 Plug 'SidOfc/mkdx'                      " Markdown plugin
 Plug 'sulibo/vim-jekyll'                " Jekyll plugin
+
+" Programming
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'leafgarland/typescript-vim'
-Plug 'bkad/CamelCaseMotion'
-Plug 'joshdick/onedark.vim'
 
 " Appearance
+Plug 'joshdick/onedark.vim'
 Plug 'camspiers/animate.vim'
 Plug 'camspiers/lens.vim'
 " Plug 'unblevable/quick-scope'         " Highlight jump characters - slows
@@ -63,6 +75,8 @@ Plug 'chrisbra/Colorizer'             " Show hex codes as colours
 " Plug 'Shougo/deoplete.nvim'
 " Plug 'zchee/deoplete-go', { 'do': 'make' }
 call plug#end()
+" Buffers and files
+" }}}
 
 " Use :help <option> to see the docs
 set encoding=utf-8
@@ -70,6 +84,7 @@ set expandtab
 set shiftwidth=4
 set softtabstop=4
 set smartindent
+set foldmethod=syntax
 set incsearch
 set ignorecase
 set smartcase
@@ -82,7 +97,10 @@ set ruler
 set nospell
 set rnu
 set updatetime=300
-set termguicolors
+" let's try fixing colors on nvim
+if !has('nvim')
+  set termguicolors!
+endif
 " supposed to fix slowness caused by vim-nerdtree-syntax-highlight
 set lazyredraw
 set wildignore=*/node_modules/*
@@ -109,12 +127,16 @@ hi! Normal ctermbg=NONE guibg=NONE
 hi! Normal guifg=NONE ctermfg=NONE
 
 "" Key remaps -----------------
-nnoremap <silent> <expr> <C-S-E> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufexists(expand('%')) ? "\:NERDTreeFind<CR>" : "\:NERDTree<CR>"
 nnoremap <silent> <expr> <F2> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufexists(expand('%')) ? "\:NERDTreeFind<CR>" : "\:NERDTree<CR>"
 :nnoremap <F5> "=strftime("%FT%T%z")<CR>P
 :inoremap <F5> <C-R>=strftime("%FT%T%z")<CR>
 
-"" Movement and manipulation remaps
+" <F8> to toggle highlight on the word under the cursor
+:nnoremap <silent> <F8> :let @/='\<<C-R>=expand("<cword>")<CR>\>'<CR>:set hls! hlsearch?<CR>
+" escape will turn off highlight
+:nnoremap <silent> <esc> :nohlsearch<CR><esc>
+
+" Movement and manipulation remaps
 nnoremap Y y$
 map H ^
 map L $
@@ -126,10 +148,23 @@ map L $
 """" \s is for word substitute
 :nnoremap <Leader>s :%s/\<<C-r><C-w>\>/
 """" fugitive
-nnoremap <C-S-A> :Git blame<CR>
+function! s:BlameToggle() abort
+  let found = 0
+  for winnr in range(1, winnr('$'))
+    if getbufvar(winbufnr(winnr), '&filetype') ==# 'fugitiveblame'
+      exe winnr . 'close'
+      let found = 1
+    endif
+  endfor
+  if !found
+    Git blame
+  endif
+endfunction
+
+nmap <silent> <C-B> :call <SID>BlameToggle()<CR>
 let g:fugitive_summary_format = '%s (%cr) <%an>'
 """" coc.nvim
-nnoremap <leader>c :CocAction<CR> 
+nnoremap <leader>c :CocAction<CR>
 
 " Give more space for displaying messages.
 set cmdheight=2
@@ -274,26 +309,46 @@ nnoremap <silent> <space>k  :<C-u>CocPrev<CR>
 nnoremap <silent> <space>p  :<C-u>CocListResume<CR>
 
 
-""" Set up :Prettier 
-" command! -nargs=0 Prettier :CocCommand prettier.formatFile
-
-
 """" CamelCase motion
 let g:camelcasemotion_key = '<leader>'
 
 """ Navigation ----------------
-"""" CtrlP - go to definition
-let g:ctrlp_map = '<C-p>'
-let g:ctrlp_cmd = 'CtrlP'
-let g:ctrlp_custom_ignore = '\v[\/](node_modules|target|dist|coverage|researchtag|webBasedPortal)|(\.(swp|ico|git|svn))$'
-noremap <leader>pp <ESC>:CtrlPRoot<CR>
-noremap <leader>pb <ESC>:CtrlPBuffer<CR>
-noremap <leader>pt <ESC>:CtrlPMRUFiles<CR>
-noremap <leader>pm <ESC>:CtrlPMRUFiles<CR>
-noremap <leader>m <ESC>:CtrlPMRUFiles<CR>
-noremap <leader>po <ESC>:CtrlPChangeAll<CR>
-noremap <leader>pgi <ESC>:CtrlPChangeAll<CR>
-noremap <leader>pc <ESC>:CtrlPClearAllCaches<CR>
+" CtrlP - go to definition {{{
+  let g:ctrlp_map = '<C-p>'
+  let g:ctrlp_cmd = 'CtrlP'
+  let g:ctrlp_custom_ignore = '\v[\/](node_modules|target|dist|lib|vendor|coverage|researchtag|webBasedPortal)|(\.(swp|ico|git|svn))$'
+"  noremap <leader>pp <ESC>:CtrlPRoot<CR>
+"  noremap <leader>pb <ESC>:CtrlPBuffer<CR>
+"  noremap <leader>pt <ESC>:CtrlPMRUFiles<CR>
+"  noremap <leader>pm <ESC>:CtrlPMRUFiles<CR>
+"  noremap <leader>m <ESC>:CtrlPMRUFiles<CR>
+"  noremap <leader>po <ESC>:CtrlPChangeAll<CR>
+"  noremap <leader>pgi <ESC>:CtrlPChangeAll<CR>
+"  noremap <leader>pc <ESC>:CtrlPClearAllCaches<CR>
+" }}}
+
+" fzf {{{
+  let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
+  nnoremap <silent> <leader>o :Files<CR>
+  nnoremap <silent> <leader><space> :Buffers<CR>
+  " m stands for MRU files
+  nnoremap <silent> <leader>m :FZFMru<CR>
+  let g:fzf_mru_relative = 1
+  " nnoremap <silent> <leader>m :FilesMru<CR>
+  " Ctrl+F find in current file
+  nnoremap <silent> <C-F>l :BLines<CR>
+  command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings -S --no-ignore --hidden --follow --glob "!{**/__pycache__,**/node_modules,**/.git,**/*.pyc,**/venv/lib}" --color "always" '.shellescape(<q-args>), 1, <bang>0)
+  nnoremap <C-F>f :Find<CR>
+" }}}
+
+" ripgrep {{{
+  let g:rg_command = 'rg --vimgrep -S'
+  let g:rg_highlight = 'true'
+  let g:rg_derive_root = 'false' " it will use getcwd() (startup dir or `chdir`)
+  nnoremap <C-F> :Rg
+  nnoremap <C-F>r :Rg
+  nnoremap <C-F>g :Rg
+" }}}
 
 """ Refactoring ---------------
 nmap <S-F6> <Plug>(coc-rename)
@@ -301,29 +356,38 @@ nmap <S-F6> <Plug>(coc-rename)
 " nmap <silent> <A-7> :copen<CR><CR>
 " :nnoremap <A-S-F> :vimgrep /<C-R>/g **<CR>
 
-""" Buffers -------------------
-nmap <F3> :TagbarToggle<CR>
-"""" Use fancy buffer closing that doesn't close the split
-:nnoremap <silent> <S-Left> :bprevious<CR>
-:nnoremap <silent> <S-Right> :bnext<CR>
-:noremap <silent> <C-Left> b
-:noremap <silent> <C-Right> w
-"""" Move with Ctrl+hjkl (skip Ctrl+W step)
-nnoremap <C-L> <C-W><C-L>
-nnoremap <C-K> <C-W><C-K>
-nnoremap <C-J> <C-W><C-J>
-nnoremap <C-H> <C-W><C-H>
-"""" Delete current buffer with "\q"
-nmap <leader>q <Plug>Kwbd
+" Buffers {{{
+  nmap <F3> :TagbarToggle<CR>
+  """" Use fancy buffer closing that doesn't close the split
+  :nnoremap <silent> <S-Left> :bprevious<CR>
+  :nnoremap <silent> <S-Right> :bnext<CR>
+  :noremap <silent> <C-Left> b
+  :noremap <silent> <C-Right> w
+  """" Move with Ctrl+hjkl (skip Ctrl+W step)
+  nnoremap <C-L> <C-W><C-L>
+  nnoremap <C-K> <C-W><C-K>
+  nnoremap <C-J> <C-W><C-J>
+  nnoremap <C-H> <C-W><C-H>
+  """" Delete (wipe) current buffer with "\q", preserving windows
+  nmap <leader>q :BW<CR>
+  function! CloseOrCClose()
+    if &buftype ==# 'quickfix'
+      cclose
+    else
+      BW
+    endif
+  endfunction
+  nmap <leader>bc :call CloseOrCClose()<CR>
+  nmap <leader><leader>bw :bw<CR>
+  nmap <leader><leader>bd :bd<CR>
+  nmap <leader><leader>bun :bun<CR>
+  nmap <leader><leader>bundo :bundo<CR>
+  """" Use <leader>bw/bd/bun/bundo for buffer operations
+" }}}
 
 "" END Key remaps -------------
 
 " Plugins ----------------------
-
-"" Jira
-let g:jiraVimDomainName = "https://gomimi.atlassian.net"
-let g:jiraVimEmail = "nikola.maric@mimi.io"
-let g:jiraVimToken = "vaFuZgHD0nRU22FIxIXH73A7"
 
 "" Nuake
 tnoremap <C-q> <C-w>N
@@ -335,6 +399,8 @@ inoremap <C-\> <C-\><C-n>:Nuake<CR>
 let g:nuake_position = 'top'
 let g:nuake_size = 0.2
 
+" ,,w saves the file
+nnoremap <leader><leader>w :w<CR>
 " :w!! sudo saves the file
 cmap w!! w !sudo tee % >/dev/null
 
@@ -465,6 +531,7 @@ au BufRead,BufNewFile *.md set filetype=markdown
 syntax match Comment /\%^---\_.\{-}---$/ contains=@Spell
 au BufRead,BufNewFile *.http set syntax=json
 au BufRead,BufNewFile *.http setlocal ts=2 sts=2 sw=2
+au BufRead,BufNewFile *.tsx set syntax=typescript
 autocmd FileType json syntax match Comment +\/\/.\+$+
 autocmd FileType json setlocal ts=2 sts=2 sw=2
 
@@ -476,15 +543,22 @@ autocmd FileType help nnoremap <buffer> O ?'\l\{2,\}'<CR>
 autocmd FileType help nnoremap <buffer> s /\|\zs\S\+\ze\|<CR>
 autocmd FileType help nnoremap <buffer> S ?\|\zs\S\+\ze\|<CR>
 
+" Don't wrap long lines in git PR or git commit messages
+autocmd FileType git,gitcommit set formatoptions=n
+
 """ Automatic commands
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
-autocmd FileType c,cpp,h,java,python,go,js,jsx,tsc,ts nested :TagbarOpen
+" Automatically start NERDTree (disabled bc annoying when used with fzf
+" file opener)
+" autocmd StdinReadPre * let s:std_in=1
+" autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+" this just gets in the way when using narrow windows
+" autocmd FileType c,cpp,h,java,python,go,js,jsx,tsc,ts nested :TagbarOpen
 
 """ QuickFix window always at the bottom
 autocmd FileType qf wincmd J
 
 """ Two space indents:
+autocmd Filetype zsh,vim setlocal ts=2 sts=2 sw=2
 autocmd Filetype ruby setlocal ts=2 sts=2 sw=2
 autocmd Filetype yaml setlocal ts=2 sts=2 sw=2
 autocmd Filetype js setlocal ts=2 sts=2 sw=2
@@ -493,16 +567,41 @@ autocmd Filetype tsc setlocal ts=2 sts=2 sw=2
 autocmd Filetype ts setlocal ts=2 sts=2 sw=2
 autocmd Filetype typescript setlocal ts=2 sts=2 sw=2
 
+
 """ Autoload changes in .vimrc
-autocmd BufWritePost .vimrc source $MYVIMRC
-cmap reloadvimrc source $MYVIMRC
+" autocmd BufWritePost .vimrc source $MYVIMRC
+" cmap reloadvimrc source $MYVIMRC
 
 " Fix editing crontab
 autocmd filetype crontab setlocal nobackup nowritebackup
 
-" Autosave folding on exit and load on open
-autocmd BufWinLeave *.* mkview
-autocmd BufWinEnter *.* silent loadview 
+" Folding {{{
+  function! VimFolds(lnum)
+      " get content of current line and the line below
+      let l:cur_line = getline(a:lnum)
+      let l:next_line = getline(a:lnum+1)
+
+      if l:cur_line =~# '^"{'
+          return '>' . (matchend(l:cur_line, '"{*') - 1)
+      else
+          if l:cur_line ==# '' && (matchend(l:next_line, '"{*') - 1) == 1
+              return 0
+          else
+              return '='
+          endif
+      endif
+  endfunction
+
+  "set foldmethod=expr
+  "set foldexpr=VimFolds(v:lnum)
+
+  " Autosave folding on exit and load on open
+  augroup remember_folds
+    autocmd!
+    autocmd BufWinLeave *.* mkview
+    autocmd BufWinEnter *.* silent! loadview
+  augroup END
+"}}}
 
 " run ncat
 map <c-y>l :! eval $(cat ~/.netcat/localhost.env); envsubst < % \| sed '1,/Content-Length/d;/,0/,$d' \| tail -n+2 \| wc -c \| read NC_MM_CONTENT_LENGTH; export NC_MM_CONTENT_LENGTH; envsubst < % \| tee /dev/tty \| ~/.netcat/ncat-wrapper.sh localhost <CR>
