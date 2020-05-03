@@ -141,8 +141,8 @@ nnoremap Y y$
 map H ^
 map L $
 
-:let mapleader = '\'
-:nmap , \
+:let mapleader = ','
+:nmap \ ,
 
 """ Usability -----------------
 """" \s is for word substitute
@@ -369,7 +369,7 @@ nmap <S-F6> <Plug>(coc-rename)
   nnoremap <C-J> <C-W><C-J>
   nnoremap <C-H> <C-W><C-H>
   """" Delete (wipe) current buffer with "\q", preserving windows
-  nmap <leader>q :BW<CR>
+  nnoremap <leader>q :BW<CR>
   function! CloseOrCClose()
     if &buftype ==# 'quickfix'
       cclose
@@ -382,6 +382,8 @@ nmap <S-F6> <Plug>(coc-rename)
   nmap <leader><leader>bd :bd<CR>
   nmap <leader><leader>bun :bun<CR>
   nmap <leader><leader>bundo :bundo<CR>
+  nnoremap <leader>bm :bmod<CR>
+  nnoremap <leader><leader>q :close<CR>
   """" Use <leader>bw/bd/bun/bundo for buffer operations
 " }}}
 
