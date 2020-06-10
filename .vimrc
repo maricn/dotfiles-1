@@ -31,17 +31,18 @@ Plug 'ryanoasis/vim-devicons'
 " Git related
 Plug 'tpope/vim-fugitive'
 Plug 'rhysd/committia.vim'
-" Plug 'mhinz/vim-signify'
-Plug 'airblade/vim-gitgutter'
+Plug 'airblade/vim-gitgutter'           " Show sign on the left side when the line has been modified
 Plug 'tpope/vim-rhubarb'                " To use :Gbrowse (open commit in GitHub)
 
 " Utilities
 " Plug 'roxma/nvim-yarp'                  " Yet Another Remote Plugin Framework for Neovim (used for ncm2 and deoplete.nvim)
 " Plug 'brooth/far.vim'                   " Find and replace
+Plug 'romainl/vim-qf'                   " Advanced quickfix behavior (skip to next filename {/}; :Keep, :Reject and :Restore entries funnel - works with quickfix-reflector.vim)
 Plug 'stefandtw/quickfix-reflector.vim' " Edit the quickfix list (find and replace with rg/fzf)
 Plug 'matze/vim-move'                   " Move lines up and down
 Plug 'ConradIrwin/vim-bracketed-paste'  " Detect clipboard paste (auto :set paste!)
 Plug 'jremmen/vim-ripgrep'              " Use ripgrep for search
+Plug 'mhinz/vim-grepper'               " grep using your fav grepper
 Plug 'majutsushi/tagbar'                " Tagbar (right side thing to show functions)
 Plug 'bkad/CamelCaseMotion'
 Plug 'tpope/vim-commentary'             " :Commentary to comment out a line or block
@@ -66,7 +67,7 @@ Plug 'eliba2/vim-node-inspect'          " NodeJS interactive debugger
 " Appearance
 Plug 'camspiers/animate.vim'
 Plug 'camspiers/lens.vim'
-Plug 'unblevable/quick-scope'         " Highlight jump characters - slows
+Plug 'unblevable/quick-scope'         " Highlight jump characters - slows (unless only on f/F trigger)
 " down vim considerably
 Plug 'joshdick/onedark.vim'           " Colorscheme onedark
 Plug 'morhetz/gruvbox'                " Colorscheme gruvbox (can be light)
@@ -134,6 +135,8 @@ xnoremap p "_dP
             \ hi CocInfoSign  ctermfg=Yellow guifg=#fab005 |
             \ hi CocHintSign  ctermfg=Blue guifg=#15aabf |
             \ hi CocUnderline  cterm=underline gui=underline
+    " highlight quickfix line
+    hi QuickFixLine cterm=None ctermbg=black guibg=#ffff00
   " }}}
   
   " lens.vim {{{
@@ -145,7 +148,7 @@ xnoremap p "_dP
   " }}}
 
 "" Key remaps -----------------
-nnoremap <silent> <expr> <F2> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufexists(expand('%')) ? "\:NERDTreeFind<CR>" : "\:NERDTree<CR>"
+noremap <silent> <expr> <F2> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufexists(expand('%')) ? "\:NERDTreeFind<CR>" : "\:NERDTree<CR>"
 :nnoremap <F5> "=strftime("%FT%T%z")<CR>P
 :inoremap <F5> <C-R>=strftime("%FT%T%z")<CR>
 
@@ -334,6 +337,7 @@ xmap <silent> <TAB> <Plug>(coc-range-select)
 " Remove coc selection extension (coc-range-select) on Ctrl+I
 " Because it overrides default vim C-O / C-I jump behavior
 autocmd VimEnter * :unmap <C-I>
+autocmd VimEnter * :unmap <leader>ge
 
 " Add `:Format` command to format current buffer.
 command! -nargs=0 Format :call CocAction('format')
@@ -410,6 +414,26 @@ let g:camelcasemotion_key = '<leader>'
   let g:rg_derive_root = 'false' " it will use getcwd() (startup dir or `chdir`)
   nnoremap <C-F>g :Rg
   vmap <c-f> "hy:Rg<Enter><M-r>h
+" }}}
+
+" vim-grepper {{{
+  " initialize with default values
+  let g:grepper = {}
+  let g:grepper.rg = {}
+  runtime plugin/grepper.vim
+  " override rg query
+  let g:grepper.rg.grepprg = 'rg --follow --smart-case --with-filename --no-heading --vimgrep --hidden --glob "!{**/__pycache__,**/node_modules,**/.git,**/*.pyc,**/venv/lib}"'
+  " highlight searches
+  let g:grepper.searchreg = 1
+  let g:grepper.highlight = 1
+  " show only the grep $tool name in the prompt
+  let g:grepper.prompt_text = '$t> '
+  nnoremap <leader>g :Grepper -tool rg<cr>
+  nnoremap <leader>G :Grepper -tool rg -buffers<cr>
+  nnoremap <leader>* :Grepper -tool rg -cword -noprompt<cr>
+  nnoremap <leader>8 :Grepper -tool rg -cword -noprompt<cr>
+  nmap gs <plug>(GrepperOperator)
+  xmap gs <plug>(GrepperOperator)
 " }}}
 
 """ Refactoring ---------------
@@ -536,10 +560,10 @@ au InsertLeave * hi statusline guibg=#8fbfdc ctermbg=cyan
   endfunction
   
   let g:startify_lists = [
-          \ { 'type': 'files',     'header': ['   MRU']            },
-          \ { 'type': 'dir',       'header': ['   MRU '. getcwd()] },
           \ { 'type': 'sessions',  'header': ['   Sessions']       },
           \ { 'type': 'bookmarks', 'header': ['   Bookmarks']      },
+          \ { 'type': 'files',     'header': ['   MRU']            },
+          \ { 'type': 'dir',       'header': ['   MRU '. getcwd()] },
           \ { 'type': function('s:gitModified'),  'header': ['   git modified']},
           \ { 'type': function('s:gitUntracked'), 'header': ['   git untracked']},
           \ { 'type': 'commands',  'header': ['   Commands']       },
