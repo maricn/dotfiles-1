@@ -12,11 +12,8 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'liuchengxu/vim-which-key'       " Vim mapping, and its on-demand lazy load
 Plug 'liuchengxu/vim-which-key', { 'on': ['WhichKey', 'WhichKey!'] }
-
 " Quake term
-if v:version >= 801
-  Plug 'bag-man/nuake'    " Quake term
-endif
+Plug 'bag-man/nuake'    " Quake term
 
 " TMP: Plug 'ctrlpvim/ctrlp.vim'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
@@ -39,15 +36,15 @@ Plug 'airblade/vim-gitgutter'
 Plug 'tpope/vim-rhubarb'                " To use :Gbrowse (open commit in GitHub)
 
 " Utilities
+" Plug 'roxma/nvim-yarp'                  " Yet Another Remote Plugin Framework for Neovim (used for ncm2 and deoplete.nvim)
 " Plug 'brooth/far.vim'                   " Find and replace
 Plug 'stefandtw/quickfix-reflector.vim' " Edit the quickfix list (find and replace with rg/fzf)
 Plug 'matze/vim-move'                   " Move lines up and down
 Plug 'ConradIrwin/vim-bracketed-paste'  " Detect clipboard paste (auto :set paste!)
 Plug 'jremmen/vim-ripgrep'              " Use ripgrep for search
-" Plug 'roxma/nvim-yarp'
 Plug 'majutsushi/tagbar'                " Tagbar (right side thing to show functions)
 Plug 'bkad/CamelCaseMotion'
-Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-commentary'             " :Commentary to comment out a line or block
 " autocomplete window with escape
 Plug 'roxma/vim-hug-neovim-rpc'
 Plug 'tpope/vim-sensible'
@@ -55,18 +52,24 @@ Plug 'sukima/xmledit'
 Plug 'mboughaba/i3config.vim'
 Plug 'SidOfc/mkdx'                      " Markdown plugin
 Plug 'sulibo/vim-jekyll'                " Jekyll plugin
+Plug 'junegunn/vim-peekaboo'            " sneak peak preview of registers on @ and "
+Plug 'mhinz/vim-startify'               " Start screen for vim
+" Plug 'ncm2/ncm2'                        " nvim-completion-manager
+" Plug 'svermeulen/vim-yoink'             " clipboard history manager (buffer yankring)
+" Plug 'svermeulen/ncm2-yoink'            " clipboard history manager ncm2 completion
 
 " Programming
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'leafgarland/typescript-vim'
+Plug 'eliba2/vim-node-inspect'          " NodeJS interactive debugger
 
 " Appearance
-Plug 'joshdick/onedark.vim'
 Plug 'camspiers/animate.vim'
 Plug 'camspiers/lens.vim'
-" Plug 'unblevable/quick-scope'         " Highlight jump characters - slows
+Plug 'unblevable/quick-scope'         " Highlight jump characters - slows
 " down vim considerably
-Plug 'joshdick/onedark.vim'           " Color scheme onedark
+Plug 'joshdick/onedark.vim'           " Colorscheme onedark
+Plug 'morhetz/gruvbox'                " Colorscheme gruvbox (can be light)
 Plug 'breuckelen/vim-resize'          " Use Ctrl+arrows to resize splits
 Plug 'chrisbra/Colorizer'             " Show hex codes as colours
 " Plug 'Townk/vim-autoclose' " perhaps is conflicting when closing
@@ -85,6 +88,7 @@ set shiftwidth=4
 set softtabstop=4
 set smartindent
 set foldmethod=syntax
+set nowrap
 set incsearch
 set ignorecase
 set smartcase
@@ -101,6 +105,8 @@ set updatetime=300
 if !has('nvim')
   set termguicolors!
 endif
+let g:python3_host_prog="/usr/bin/"
+
 " supposed to fix slowness caused by vim-nerdtree-syntax-highlight
 set lazyredraw
 set wildignore=*/node_modules/*
@@ -108,23 +114,35 @@ set wildignore=*/node_modules/*
 " overwritten text into the buffer, but just paste over it)
 xnoremap p "_dP
 
-"" Customize view
-syntax on
-" Sakura supports TRUECOLOR, so no need to revert to 256
-" set t_Co=256
-" set t_ut=
-colorscheme onedark
 
-""" lens.vim
-" 120 + 4 for gutter
-let g:lens#disabled = 1
-let g:lens#width_resize_max = 124
-" git commit, nerdtree
-let g:lens#disabled_filetypes = ['nerdtree', 'fzf']
-
-"""" Fix background (revert so that terminal's default is used)
-hi! Normal ctermbg=NONE guibg=NONE
-hi! Normal guifg=NONE ctermfg=NONE
+" Customize view {{{
+  syntax on
+  " Sakura supports TRUECOLOR, so no need to revert to 256
+  " set t_Co=256
+  " set t_ut=
+  set guicursor=i:ver1      " insert mode: vertical bar
+  set guicursor+=a:blinkon1 " all modes: turn on blinking
+  
+  " themes {{{
+    " autocmd vimenter * colorscheme onedark
+    autocmd vimenter * colorscheme gruvbox
+    set background=dark
+    " fix for Coc diagnostic signs color mismatch
+    autocmd ColorScheme * 
+            \ hi CocErrorSign  ctermfg=Red guifg=#ff0000 | 
+            \ hi CocWarningSign  ctermfg=Brown guifg=#ff922b |
+            \ hi CocInfoSign  ctermfg=Yellow guifg=#fab005 |
+            \ hi CocHintSign  ctermfg=Blue guifg=#15aabf |
+            \ hi CocUnderline  cterm=underline gui=underline
+  " }}}
+  
+  " lens.vim {{{
+    let g:lens#disabled = 1
+    " 120 + 4 for gutter
+    let g:lens#width_resize_max = 124
+    " git commit, nerdtree
+    let g:lens#disabled_filetypes = ['nerdtree', 'fzf']
+  " }}}
 
 "" Key remaps -----------------
 nnoremap <silent> <expr> <F2> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufexists(expand('%')) ? "\:NERDTreeFind<CR>" : "\:NERDTree<CR>"
@@ -135,31 +153,69 @@ nnoremap <silent> <expr> <F2> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : bufe
 :nnoremap <silent> <F8> :let @/='\<<C-R>=expand("<cword>")<CR>\>'<CR>:set hls! hlsearch?<CR>
 " escape will turn off highlight
 :nnoremap <silent> <esc> :nohlsearch<CR><esc>
+" escape will exit terminal mode - clashes with open buffer/MRU floating
+" window, as that also seems to be of "terminal" type
+" :tnoremap <silent> <esc> <C-\><C-n>
 
 " Movement and manipulation remaps
 nnoremap Y y$
 map H ^
 map L $
 
+" append newline w/o exiting normal mode
+nnoremap <silent> <leader>o :<C-u>call append(line("."),   repeat([""], v:count1))<CR>
+nnoremap <silent> <leader>O :<C-u>call append(line(".")-1, repeat([""], v:count1))<CR>
+
+" duplicate selection
+vmap <c-d> y'>p
+
+" leader
 :let mapleader = ','
 :nmap \ ,
 
 """ Usability -----------------
 """" \s is for word substitute
 :nnoremap <Leader>s :%s/\<<C-r><C-w>\>/
-"""" fugitive
-function! s:BlameToggle() abort
-  let found = 0
-  for winnr in range(1, winnr('$'))
-    if getbufvar(winbufnr(winnr), '&filetype') ==# 'fugitiveblame'
-      exe winnr . 'close'
-      let found = 1
+" fugitive {{{
+  function! s:BlameToggle() abort
+    let found = 0
+    for winnr in range(1, winnr('$'))
+      if getbufvar(winbufnr(winnr), '&filetype') ==# 'fugitiveblame'
+        exe winnr . 'close'
+        let found = 1
+      endif
+    endfor
+    if !found
+      Git blame
     endif
-  endfor
-  if !found
-    Git blame
-  endif
+  endfunction
+" }}}
+
+" peekaboo {{{
+function! CreateCenteredFloatingWindow()
+    let width = float2nr(&columns * 0.6)
+    let height = float2nr(&lines * 0.6)
+    let top = ((&lines - height) / 2) - 1
+    let left = (&columns - width) / 2
+    let opts = {'relative': 'editor', 'row': top, 'col': left, 'width': width, 'height': height, 'style': 'minimal'}
+
+    let top = "╭" . repeat("─", width - 2) . "╮"
+    let mid = "│" . repeat(" ", width - 2) . "│"
+    let bot = "╰" . repeat("─", width - 2) . "╯"
+    let lines = [top] + repeat([mid], height - 2) + [bot]
+    let s:buf = nvim_create_buf(v:false, v:true)
+    call nvim_buf_set_lines(s:buf, 0, -1, v:true, lines)
+    call nvim_open_win(s:buf, v:true, opts)
+    set winhl=Normal:Floating
+    let opts.row += 1
+    let opts.height -= 2
+    let opts.col += 2
+    let opts.width -= 4
+    call nvim_open_win(nvim_create_buf(v:false, v:true), v:true, opts)
+    au BufWipeout <buffer> exe 'bw '.s:buf
 endfunction
+let g:peekaboo_window="call CreateCenteredFloatingWindow()"
+" }}}
 
 nmap <silent> <C-B> :call <SID>BlameToggle()<CR>
 let g:fugitive_summary_format = '%s (%cr) <%an>'
@@ -241,7 +297,7 @@ nmap <leader>f  :Format<CR>
 augroup mygroup
   autocmd!
   " Setup formatexpr specified filetype(s).
-  autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
+  autocmd FileType typescript,json,jsonc setl formatexpr=CocAction('formatSelected')
   " Update signature help on jump placeholder.
   autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
 augroup end
@@ -327,16 +383,23 @@ let g:camelcasemotion_key = '<leader>'
 "  noremap <leader>pc <ESC>:CtrlPClearAllCaches<CR>
 " }}}
 
+" terminal register pasting on Alt+reg_name {{{
+  if has('nvim')
+    tnoremap <expr> <M-r> '<C-\><C-N>"'.nr2char(getchar()).'pi'
+  endif
+" }}}
+
 " fzf {{{
   let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6 } }
-  nnoremap <silent> <leader>o :Files<CR>
+  nnoremap <silent> <leader>. :Files<CR>
   nnoremap <silent> <leader><space> :Buffers<CR>
   " m stands for MRU files
   nnoremap <silent> <leader>m :FZFMru<CR>
   let g:fzf_mru_relative = 1
   " nnoremap <silent> <leader>m :FilesMru<CR>
   " Ctrl+F find in current file
-  nnoremap <silent> <C-F>l :BLines<CR>
+  nnoremap <silent> <C-F>l :Lines<CR>
+  nnoremap <silent> <C-F>b :BLines<CR>
   command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings -S --no-ignore --hidden --follow --glob "!{**/__pycache__,**/node_modules,**/.git,**/*.pyc,**/venv/lib}" --color "always" '.shellescape(<q-args>), 1, <bang>0)
   nnoremap <C-F>f :Find<CR>
 " }}}
@@ -345,9 +408,8 @@ let g:camelcasemotion_key = '<leader>'
   let g:rg_command = 'rg --vimgrep -S'
   let g:rg_highlight = 'true'
   let g:rg_derive_root = 'false' " it will use getcwd() (startup dir or `chdir`)
-  nnoremap <C-F> :Rg
-  nnoremap <C-F>r :Rg
   nnoremap <C-F>g :Rg
+  vmap <c-f> "hy:Rg<Enter><M-r>h
 " }}}
 
 """ Refactoring ---------------
@@ -355,6 +417,11 @@ nmap <S-F6> <Plug>(coc-rename)
 
 " nmap <silent> <A-7> :copen<CR><CR>
 " :nnoremap <A-S-F> :vimgrep /<C-R>/g **<CR>
+
+" Code {{{
+  nnoremap <c-_> :Commentary<CR>
+  vnoremap <c-_> :Commentary<CR>
+"  }}}
 
 " Buffers {{{
   nmap <F3> :TagbarToggle<CR>
@@ -430,6 +497,7 @@ call NERDTreeHighlightFile('yml', 'yellow', 'none', 'yellow', 'black')
 call NERDTreeHighlightFile('config', 'yellow', 'none', 'yellow', 'black')
 call NERDTreeHighlightFile('conf', 'yellow', 'none', 'yellow', 'black')
 call NERDTreeHighlightFile('json', 'yellow', 'none', 'yellow', 'black')
+call NERDTreeHighlightFile('jsonc', 'yellow', 'none', 'yellow', 'black')
 call NERDTreeHighlightFile('html', 'yellow', 'none', 'yellow', 'black')
 call NERDTreeHighlightFile('styl', 'cyan', 'none', 'cyan', 'black')
 call NERDTreeHighlightFile('css', 'cyan', 'none', 'cyan', 'black')
@@ -445,9 +513,39 @@ call NERDTreeHighlightFile('ts', 'green', 'none', 'green', 'black')
 call NERDTreeHighlightFile('py', 'green', 'none', 'green', 'black')
 
 " status bar colors
-au InsertEnter * hi statusline guifg=black guibg=#d7afff ctermfg=black ctermbg=magenta
-au InsertLeave * hi statusline guifg=black guibg=#8fbfdc ctermfg=black ctermbg=cyan
-hi statusline guifg=black guibg=#8fbfdc ctermfg=black ctermbg=cyan
+hi statusline guibg=#8fbfdc ctermbg=cyan
+au InsertEnter * hi statusline guibg=#d7afff ctermbg=magenta
+au InsertLeave * hi statusline guibg=#8fbfdc ctermbg=cyan
+" au InsertEnter * hi statusline guifg=black guibg=#d7afff ctermfg=black ctermbg=magenta
+" au InsertLeave * hi statusline guifg=black guibg=#8fbfdc ctermfg=black ctermbg=cyan
+" hi statusline guifg=black guibg=#8fbfdc ctermfg=black ctermbg=cyan
+
+" vim-startify {{{
+  " returns all modified files of the current git repo
+  " `2>/dev/null` makes the command fail quietly, so that when we are not
+  " in a git repo, the list will be empty
+  function! s:gitModified()
+      let files = systemlist('git ls-files -m 2>/dev/null')
+      return map(files, "{'line': v:val, 'path': v:val}")
+  endfunction
+  
+  " same as above, but show untracked files, honouring .gitignore
+  function! s:gitUntracked()
+      let files = systemlist('git ls-files -o --exclude-standard 2>/dev/null')
+      return map(files, "{'line': v:val, 'path': v:val}")
+  endfunction
+  
+  let g:startify_lists = [
+          \ { 'type': 'files',     'header': ['   MRU']            },
+          \ { 'type': 'dir',       'header': ['   MRU '. getcwd()] },
+          \ { 'type': 'sessions',  'header': ['   Sessions']       },
+          \ { 'type': 'bookmarks', 'header': ['   Bookmarks']      },
+          \ { 'type': function('s:gitModified'),  'header': ['   git modified']},
+          \ { 'type': function('s:gitUntracked'), 'header': ['   git untracked']},
+          \ { 'type': 'commands',  'header': ['   Commands']       },
+          \ ]
+  autocmd User Startified setlocal cursorline
+" }}}
 
 " Status line
 " default: set statusline=%f\ %h%w%m%r\ %=%(%l,%c%V\ %=\ %P%)
@@ -483,11 +581,11 @@ set statusline+=%0*\ %<%f%m%r%h%w\                       " File path, modified, 
 set statusline+=%3*│                                     " Separator
 set statusline+=%2*\ %02l:%02v\ (%3p%%)\                 " Line number : column number ( percentage )
 set statusline+=%=                                       " Right Side
-set statusline+=%2*\ %Y\                                 " FileType
-set statusline+=%3*│                                     " Separator
-set statusline+=%2*\ %{''.(&fenc!=''?&fenc:&enc).''}     " Encoding
-set statusline+=\ (%{&ff})                               " FileFormat (dos/unix..)
-set statusline+=%3*│                                     " Separator
+" set statusline+=%2*\ %Y\                                 " FileType
+" set statusline+=%3*│                                     " Separator
+" set statusline+=%2*\ %{''.(&fenc!=''?&fenc:&enc).''}     " Encoding
+" set statusline+=\ (%{&ff})                               " FileFormat (dos/unix..)
+" set statusline+=%3*│                                     " Separator
 set statusline+=%0*\ %{fugitive#head()}\                 " Fugitive - git branch name
 set statusline+=%3*│                                     " Separator
 set statusline+=%0*\ %{toupper(g:currentmode[mode()])}\  " The current mode
@@ -517,6 +615,9 @@ let g:polyglot_disabled = ['markdown'] " for vim-polyglot users, it loads Plasti
 let g:jekyll_post_extension = '.md'
 let g:jekyll_draft_dirs = ['_drafts', '_source/_drafts', 'notes']
 
+" Quick Scope (jump f key highlight)
+let g:qs_highlight_on_keys = ['f', 'F']
+
 " Tmux integration
 if &term =~ '^screen'
     " tmux will send xterm-style keys when xterm-keys is on
@@ -530,12 +631,13 @@ autocmd VimLeave * silent !tmux kill-session -t $VIM_SESSION
 
 """ Custom file types
 au BufRead,BufNewFile *.md set filetype=markdown
+au BufRead,BufNewFile *.jsonc set filetype=json
+au BufRead,BufNewFile *.tsx set filetype=typescript
 syntax match Comment /\%^---\_.\{-}---$/ contains=@Spell
 au BufRead,BufNewFile *.http set syntax=json
 au BufRead,BufNewFile *.http setlocal ts=2 sts=2 sw=2
-au BufRead,BufNewFile *.tsx set syntax=typescript
-autocmd FileType json syntax match Comment +\/\/.\+$+
-autocmd FileType json setlocal ts=2 sts=2 sw=2
+autocmd FileType json,jsonc syntax match Comment +\/\/.\+$+
+autocmd FileType json,jsonc setlocal ts=2 sts=2 sw=2
 
 """ Better help navigation
 autocmd FileType help nnoremap <buffer> <CR> <C-]>
